@@ -19,7 +19,8 @@ import {
   History,
   RotateCcw,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Search
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -99,6 +100,7 @@ export const AITutorPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const [showHistorySidebar, setShowHistorySidebar] = useState<boolean>(false);
   const [showContextCard, setShowContextCard] = useState<boolean>(true);
   const [showClearConfirmModal, setShowClearConfirmModal] = useState<boolean>(false);
+  const [historySearchQuery, setHistorySearchQuery] = useState<string>('');
 
   // Load chat sessions from Supabase DB on mount if user is logged in
   useEffect(() => {
@@ -481,27 +483,45 @@ export const AITutorPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
               </button>
             </div>
 
+            {/* Search Input for Conversations */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search history & messages..."
+                value={historySearchQuery}
+                onChange={e => setHistorySearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
             <div className="space-y-2">
-              {sessions.map(s => (
-                <div
-                  key={s.id}
-                  onClick={() => {
-                    setActiveSessionId(s.id);
-                    setShowHistorySidebar(false);
-                  }}
-                  className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
-                    s.id === activeSessionId
-                      ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <MessageSquare className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
-                    <span className="truncate">{s.title}</span>
+              {sessions
+                .filter(s =>
+                  !historySearchQuery.trim() ||
+                  s.title.toLowerCase().includes(historySearchQuery.toLowerCase()) ||
+                  s.messages.some(m => m.content.toLowerCase().includes(historySearchQuery.toLowerCase()))
+                )
+                .map(s => (
+                  <div
+                    key={s.id}
+                    onClick={() => {
+                      setActiveSessionId(s.id);
+                      setShowHistorySidebar(false);
+                    }}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
+                      s.id === activeSessionId
+                        ? 'bg-indigo-600/20 border-indigo-500 text-white'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <MessageSquare className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
+                      <span className="truncate">{s.title}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 shrink-0">{s.messages.length} msgs</span>
                   </div>
-                  <span className="text-[10px] text-slate-500 shrink-0">{s.messages.length} msgs</span>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}

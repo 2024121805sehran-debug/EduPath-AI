@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
-import { generateBotResponse } from '../services/aiService';
+import { sendAIChatToBackend } from '../services/aiService';
 import type { ChatMessage } from '../types';
 import { Bot, Send, User, Copy, Check } from 'lucide-react';
 
@@ -37,7 +37,7 @@ How can I assist you with your Year ${userProgress.selectedYear} / Semester ${us
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string) => {
     const query = (textToSend || inputQuery).trim();
     if (!query) return;
 
@@ -49,14 +49,37 @@ How can I assist you with your Year ${userProgress.selectedYear} / Semester ${us
     };
 
     setMessages(prev => [...prev, userMsg]);
-    setInputQuery('');
+    if (!textToSend) setInputQuery('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const botResponse = generateBotResponse(query, activeCourse.shortTitle);
+    try {
+      const res = await sendAIChatToBackend({
+        message: query,
+        context: {
+          course: activeCourse.title,
+          year: userProgress.selectedYear,
+          semester: userProgress.selectedSemester
+        }
+      });
+
+      const botResponse: ChatMessage = {
+        id: `msg-${Date.now() + 1}`,
+        sender: 'bot',
+        text: res.answer,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
       setMessages(prev => [...prev, botResponse]);
+    } catch (err: any) {
+      const errorMsg: ChatMessage = {
+        id: `msg-${Date.now() + 1}`,
+        sender: 'bot',
+        text: `EduBot AI is temporarily unavailable. Error: ${err.message || 'Network error'}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   const handleCopyCode = (code: string, id: string) => {
