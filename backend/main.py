@@ -13,7 +13,10 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("edupath_ai_backend")
 
-from services.gemini_service import gemini_service
+try:
+    from backend.services.gemini_service import gemini_service
+except ModuleNotFoundError:
+    from services.gemini_service import gemini_service
 
 app = FastAPI(
     title="EduPath AI Doubt Solver Backend",
@@ -22,9 +25,15 @@ app = FastAPI(
 )
 
 # CORS Middleware configuration
+cors_origins_env = os.getenv("CORS_ORIGINS", "*").strip()
+if cors_origins_env and cors_origins_env != "*":
+    allowed_origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
+else:
+    allowed_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,6 +62,15 @@ class AIChatResponse(BaseModel):
     answer: str
     model: str
     contextUsed: bool
+
+@app.get("/")
+def root_endpoint():
+    return {
+        "status": "online",
+        "service": "EduPath AI Backend API",
+        "health": "/health",
+        "docs": "/docs"
+    }
 
 @app.get("/health")
 def health_check():

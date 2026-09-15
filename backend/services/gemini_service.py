@@ -29,7 +29,7 @@ Maintain conversation context and understand follow-up questions."""
 class GeminiService:
     def __init__(self):
         self.api_key = os.getenv("GEMINI_API_KEY", "").strip()
-        self.model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
+        self.model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
 
     def is_configured(self) -> bool:
         return bool(self.api_key and len(self.api_key) > 5 and self.api_key != "YOUR_REAL_GEMINI_API_KEY")
@@ -48,7 +48,7 @@ class GeminiService:
             return {
                 "success": False,
                 "error_type": "MISSING_API_KEY",
-                "answer": "AI service is not configured. Please add GEMINI_API_KEY to the backend environment.",
+                "answer": "AI service is not configured. Please set GEMINI_API_KEY in the backend environment.",
                 "model": self.model
             }
 
@@ -80,26 +80,46 @@ class GeminiService:
                     prompt_parts.append(f"{role}: {content}")
 
             prompt_parts.append(f"\nUser Question:\n{user_message}")
-
             full_prompt = "\n".join(prompt_parts)
 
-            # Execute call using configured model
-            response = client.models.generate_content(
-                model=self.model,
-                contents=full_prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_INSTRUCTION,
-                    temperature=0.7,
-                    max_output_tokens=2048,
-                )
-            )
+            candidate_models = [self.model]
+            for m in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
+                if m not in candidate_models:
+                    candidate_models.append(m)
 
-            answer = response.text if response and response.text else "EduPath AI couldn't generate an answer."
+            last_error = None
+            response = None
+            used_model = self.model
+
+            for model_name in candidate_models:
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=full_prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=SYSTEM_INSTRUCTION,
+                            temperature=0.7,
+                            max_output_tokens=2048,
+                        )
+                    )
+                    used_model = model_name
+                    if response and response.text:
+                        break
+                except Exception as ex:
+                    last_error = ex
+                    logger.warning(f"Gemini model '{model_name}' failed: {ex}. Trying fallback model...")
+
+            if not response or not response.text:
+                if last_error:
+                    raise last_error
+                answer = "EduPath AI couldn't generate an answer."
+            else:
+                answer = response.text
 
             return {
                 "success": True,
                 "answer": answer,
-                "model": self.model,
+                "model": used_model,
                 "contextUsed": bool(context and any(context.values()))
             }
 
@@ -109,7 +129,7 @@ class GeminiService:
             if "RESOURCE_EXHAUSTED" in err_msg or "429" in err_msg:
                 user_facing_error = "EduPath AI is temporarily busy. Please try again in a moment."
             else:
-                user_facing_error = "EduPath AI couldn't respond right now. Please try again."
+                user_facing_error = f"EduPath AI couldn't respond right now. Details: {err_msg[:120]}"
 
             return {
                 "success": False,

@@ -58,7 +58,11 @@ export const generateBotResponse = (userPrompt: string, subjectContext?: string)
 
 export const sendAIChatToBackend = async (params: SendChatMessageParams): Promise<AIChatResponsePayload> => {
   try {
-    const response = await fetch('/api/ai/chat', {
+    const rawApiUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').trim();
+    const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');
+    const endpoint = API_BASE_URL ? `${API_BASE_URL}/api/ai/chat` : '/api/ai/chat';
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
