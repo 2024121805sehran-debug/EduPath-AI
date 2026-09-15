@@ -18,6 +18,8 @@ import {
   BookOpen
 } from 'lucide-react';
 
+import { renderCleanFormattedText } from '../utils/textFormatter';
+
 export const TopicDetailPage: React.FC = () => {
   const { subjectId, topicId } = useParams<{ subjectId: string; topicId: string }>();
   const navigate = useNavigate();
@@ -118,9 +120,9 @@ export const TopicDetailPage: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
               <span>AI EduBot Executive Summary</span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-              {aiExplanationText}
-            </p>
+            <div className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+              {renderCleanFormattedText(aiExplanationText)}
+            </div>
           </div>
         </div>
 
@@ -132,8 +134,8 @@ export const TopicDetailPage: React.FC = () => {
         {/* Content Body */}
         {currentTopic.contentMarkdown && (
           <div className="prose prose-invert max-w-none text-slate-300 text-sm leading-relaxed space-y-4">
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 whitespace-pre-wrap font-sans">
-              {currentTopic.contentMarkdown}
+            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 font-sans">
+              {renderCleanFormattedText(currentTopic.contentMarkdown)}
             </div>
           </div>
         )}

@@ -40,6 +40,8 @@ interface ConversationSession {
   updatedAt: string;
 }
 
+import { renderCleanFormattedText } from '../../utils/textFormatter';
+
 export const AITutorPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const location = useLocation();
   const { activeCourse, userProgress, authUser } = useUser();
@@ -335,65 +337,17 @@ export const AITutorPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         );
       }
 
-      // Format markdown text lines cleanly (headers, bold, lists) without raw ## or ** text
-      const lines = part.split('\n');
+      // Format markdown text lines cleanly (headers, bold, lists) without raw ##, $$, $, or ** text
       return (
-        <div key={pIdx} className="space-y-1.5 font-sans text-xs sm:text-sm leading-relaxed">
-          {lines.map((line, lIdx) => {
-            let trimmed = line.trim();
-            if (!trimmed) return <div key={lIdx} className="h-1" />;
-
-            // Headings (#, ##, ###)
-            if (trimmed.startsWith('#')) {
-              const cleanTitle = trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, '');
-              return (
-                <h4 key={lIdx} className="font-extrabold text-indigo-200 text-sm mt-3 mb-1 tracking-tight border-b border-indigo-500/20 pb-1">
-                  {cleanTitle}
-                </h4>
-              );
-            }
-
-            // Bullet items
-            const isBullet = /^[*-]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed);
-            if (/^[*-]\s+/.test(trimmed)) {
-              trimmed = trimmed.replace(/^[*-]\s+/, '');
-            }
-
-            // Inline bold (**text**)
-            const inlineParts = trimmed.split(/(\*\*[\s\S]*?\*\*)/g);
-            const formattedLine = inlineParts.map((inline, iIdx) => {
-              if (inline.startsWith('**') && inline.endsWith('**')) {
-                return (
-                  <strong key={iIdx} className="font-bold text-white">
-                    {inline.slice(2, -2)}
-                  </strong>
-                );
-              }
-              return inline;
-            });
-
-            if (isBullet) {
-              return (
-                <div key={lIdx} className="flex items-start gap-2 my-1 pl-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
-                  <span className="text-slate-200">{formattedLine}</span>
-                </div>
-              );
-            }
-
-            return (
-              <p key={lIdx} className="text-slate-200">
-                {formattedLine}
-              </p>
-            );
-          })}
+        <div key={pIdx} className="text-xs sm:text-sm leading-relaxed">
+          {renderCleanFormattedText(part)}
         </div>
       );
     });
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex justify-end">
+    <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm flex justify-end">
       {/* Slide-over panel */}
       <div className="w-full sm:w-[450px] h-full bg-[#0b0f19] border-l border-slate-800 flex flex-col shadow-2xl animate-fade-in relative">
         {/* Header */}

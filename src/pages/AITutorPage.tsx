@@ -4,6 +4,8 @@ import { sendAIChatToBackend } from '../services/aiService';
 import type { ChatMessage } from '../types';
 import { Bot, Send, User, Copy, Check } from 'lucide-react';
 
+import { renderCleanFormattedText } from '../utils/textFormatter';
+
 export const AITutorPage: React.FC = () => {
   const { activeCourse, userProgress } = useUser();
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -126,7 +128,7 @@ How can I assist you with your Year ${userProgress.selectedYear} / Semester ${us
                 ? 'bg-indigo-600/90 text-white rounded-tr-none'
                 : 'bg-slate-900/90 border border-slate-800 text-slate-200 rounded-tl-none'
             }`}>
-              <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
+              <div className="font-sans text-xs sm:text-sm leading-relaxed">{renderCleanFormattedText(msg.text)}</div>
 
               {/* Code Snippet Box */}
               {msg.codeSnippet && (

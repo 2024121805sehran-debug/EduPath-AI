@@ -1,8 +1,28 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, BookOpen, Code, Bot, LineChart } from 'lucide-react';
 
 export const MobileNav: React.FC = () => {
+  const location = useLocation();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  useEffect(() => {
+    const checkChatOpen = () => {
+      setIsChatOpen(document.body.classList.contains('ai-tutor-open'));
+    };
+
+    checkChatOpen();
+    const observer = new MutationObserver(checkChatOpen);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Hide bottom navbar on AI Tutor route or when AI Tutor drawer is open
+  if (location.pathname === '/ai-tutor' || isChatOpen) {
+    return null;
+  }
+
   const items = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Subjects', path: '/subjects', icon: BookOpen },

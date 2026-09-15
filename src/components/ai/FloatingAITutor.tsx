@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { AITutorPanel } from './AITutorPanel';
 
 export const FloatingAITutor: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('ai-tutor-open');
+    } else {
+      document.body.classList.remove('ai-tutor-open');
+    }
+    return () => {
+      document.body.classList.remove('ai-tutor-open');
+    };
+  }, [isOpen]);
 
   return (
     <>
