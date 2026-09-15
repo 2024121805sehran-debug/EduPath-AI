@@ -217,40 +217,69 @@ ALTER TABLE public.chat_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
 -- Shared Curriculum Public Read Policies
+DROP POLICY IF EXISTS "Allow public read courses" ON public.courses;
 CREATE POLICY "Allow public read courses" ON public.courses FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read subjects" ON public.subjects;
 CREATE POLICY "Allow public read subjects" ON public.subjects FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read units" ON public.units;
 CREATE POLICY "Allow public read units" ON public.units FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read topics" ON public.topics;
 CREATE POLICY "Allow public read topics" ON public.topics FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read resources" ON public.resources;
 CREATE POLICY "Allow public read resources" ON public.resources FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read quizzes" ON public.quizzes;
 CREATE POLICY "Allow public read quizzes" ON public.quizzes FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read quiz questions" ON public.quiz_questions;
 CREATE POLICY "Allow public read quiz questions" ON public.quiz_questions FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read coding problems" ON public.coding_problems;
 CREATE POLICY "Allow public read coding problems" ON public.coding_problems FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public read achievements" ON public.achievements;
 CREATE POLICY "Allow public read achievements" ON public.achievements FOR SELECT USING (true);
 
 -- Profiles Table User Specific Policies
+DROP POLICY IF EXISTS "Users can read own profile" ON public.profiles;
 CREATE POLICY "Users can read own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- User Topic Progress Policies
+DROP POLICY IF EXISTS "Users access own topic progress" ON public.user_topic_progress;
 CREATE POLICY "Users access own topic progress" ON public.user_topic_progress FOR ALL USING (auth.uid() = user_id);
 
 -- User Quiz Attempts Policies
+DROP POLICY IF EXISTS "Users access own quiz attempts" ON public.user_quiz_attempts;
 CREATE POLICY "Users access own quiz attempts" ON public.user_quiz_attempts FOR ALL USING (auth.uid() = user_id);
 
 -- Coding Submissions Policies
+DROP POLICY IF EXISTS "Users access own coding submissions" ON public.coding_submissions;
 CREATE POLICY "Users access own coding submissions" ON public.coding_submissions FOR ALL USING (auth.uid() = user_id);
 
 -- User Activity Policies
+DROP POLICY IF EXISTS "Users access own activity" ON public.user_activity;
 CREATE POLICY "Users access own activity" ON public.user_activity FOR ALL USING (auth.uid() = user_id);
 
 -- User Achievements Policies
+DROP POLICY IF EXISTS "Users access own achievements" ON public.user_achievements;
 CREATE POLICY "Users access own achievements" ON public.user_achievements FOR ALL USING (auth.uid() = user_id);
 
 -- Chat Sessions Policies
+DROP POLICY IF EXISTS "Users access own chat sessions" ON public.chat_sessions;
 CREATE POLICY "Users access own chat sessions" ON public.chat_sessions FOR ALL USING (auth.uid() = user_id);
 
 -- Chat Messages Policies
+DROP POLICY IF EXISTS "Users access own chat messages" ON public.chat_messages;
 CREATE POLICY "Users access own chat messages" ON public.chat_messages FOR ALL USING (auth.uid() = user_id);
 
 
